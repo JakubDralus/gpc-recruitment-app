@@ -1,4 +1,4 @@
-package com.genpt.app.dto;
+package com.genpt.api.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.genpt.app.model;
+package com.genpt.api.model;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;

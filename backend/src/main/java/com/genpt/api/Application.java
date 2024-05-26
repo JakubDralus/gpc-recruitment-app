@@ -1,8 +1,8 @@
-package com.genpt.app;
+package com.genpt.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.genpt.app.model.Product;
+import com.genpt.api.model.Product;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.SpringApplication;
@@ -15,10 +15,10 @@ import java.util.List;
 
 @SpringBootApplication
 @AllArgsConstructor
-public class GPCApplication {
+public class Application {
 	
 	public static void main(String[] args) {
-		SpringApplication.run(GPCApplication.class, args);
+		SpringApplication.run(Application.class, args);
 	}
 	
 	private final ResourceLoader resourceLoader;
@@ -26,7 +26,6 @@ public class GPCApplication {
 	@PostConstruct
 	public void dupa() throws IOException {
 		Resource resource = resourceLoader.getResource("classpath:products.xml");
-//		File file = new File("src/main/resources/products.xml");
 		XmlMapper xmlMapper = new XmlMapper();
 		TypeReference<List<Product>> productsTypeRef = new TypeReference<>() {};
 		List<Product> products = xmlMapper.readValue(resource.getFile(), productsTypeRef);

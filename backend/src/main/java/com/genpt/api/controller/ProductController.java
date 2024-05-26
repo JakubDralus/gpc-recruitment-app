@@ -1,16 +1,14 @@
-package com.genpt.app.controller;
+package com.genpt.api.controller;
 
-import com.genpt.app.dto.ProductDTO;
-import com.genpt.app.dto.ProductWrapperDTO;
-import com.genpt.app.service.ProductService;
-import com.genpt.app.util.ApiResponse;
+import com.genpt.api.dto.ProductDTO;
+import com.genpt.api.service.ProductService;
+import com.genpt.api.util.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
@@ -29,16 +27,16 @@ public class ProductController {
     }
     
     @GetMapping("/all")
-    public ApiResponse<ProductWrapperDTO> getAllProductsJSON() {
+    public ApiResponse<?> getAllProductsJSON() {
         List<ProductDTO> allProducts = productService.getAllProducts();
         
-        return ApiResponse.<ProductWrapperDTO>builder()
+        return ApiResponse.builder()
                 .message("Fetched all records from the file.")
-                .data(new ProductWrapperDTO(allProducts))
+                .data(Map.of("products", allProducts))
                 .build();
     }
 
-    // assuming the product name is not unique
+    // assuming the product name might not be unique
     @GetMapping("/{name}")
     public ApiResponse<List<ProductDTO>> getProductsByName(@PathVariable String name) {
         List<ProductDTO> productByName = productService.getProductByName(name);
@@ -48,10 +46,17 @@ public class ProductController {
                 .data(productByName)
                 .build();
     }
-//
-//    @PostMapping("/upload")
-//    public ResponseEntity<Integer> uploadXml(@RequestBody String xmlContent) {
-//        int recordCount = productService.processXml(xmlContent);
-//        return ResponseEntity.ok(recordCount);
-//    }
+    
+    @GetMapping(value = "/xml", produces = MediaType.APPLICATION_XML_VALUE)
+    public String getXmlFileContent() {
+        return productService.getXmlFileContent();
+    }
+    
+    @PostMapping("/upload")
+    public ApiResponse<?> uploadXmlFile(@RequestBody String file) {
+        int numOfRecords = productService.readXmlFile(file);
+        return ApiResponse.builder()
+                .message("File successfully parsed, number of records in the file: " + numOfRecords)
+                .build();
+    }
 }

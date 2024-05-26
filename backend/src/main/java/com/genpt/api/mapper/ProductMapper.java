@@ -1,8 +1,8 @@
-package com.genpt.app.mapper;
+package com.genpt.api.mapper;
 
-import com.genpt.app.dto.ProductDTO;
+import com.genpt.api.dto.ProductDTO;
 
-import com.genpt.app.model.Product;
+import com.genpt.api.model.Product;
 import org.springframework.stereotype.Component;
 
 import java.util.function.Function;
