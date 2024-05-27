@@ -14,10 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -30,12 +27,11 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ProductService {
     
-//    private final ResourceLoader resourceLoader;
     private final ProductMapper productMapper;
     private static final String XML_FILE_NAME = "products.xml";
-    private static Path xmlFilePath = null;
-    private static List<Product> products = null;
+    private static final Path XML_FILE_PATH = Path.of("./resources/products.xml");
     private static String xmlFileContent = null;
+    private static List<Product> products = null;
     
     
     public int readXmlFile() {
@@ -50,7 +46,7 @@ public class ProductService {
         return products.stream().map(productMapper).toList();
     }
     
-//    @Cacheable
+
     public List<ProductDTO> getProductByName(String productName) {
         if (products == null) {
             throw new EmptyResourceException("The XML file was not yet parsed.");
@@ -68,62 +64,36 @@ public class ProductService {
     }
     
     private void parseXmlFile() {
-//        try {
-//            Resource resource = resourceLoader.getResource("classpath:" + XML_FILE_NAME);
-//
-//            InputStream inputStream = resource.getInputStream();
-//            byte[] bytes = inputStream.readAllBytes(); // Read all bytes into a byte array
-//            xmlFileContent = new String(bytes); // Convert byte array to a string
-//
-//            // Use ByteArrayInputStream to create a new InputStream from the byte array
-//            try (InputStream byteArrayInputStream = new ByteArrayInputStream(bytes)) {
-//                XmlMapper xmlMapper = new XmlMapper();
-//                TypeReference<List<Product>> productsTypeRef = new TypeReference<>() {};
-//                products = xmlMapper.readValue(byteArrayInputStream, productsTypeRef);
-//            }
-//            inputStream.close();
-//        }
         try {
-            File file = new File("./resources/products.xml");
-            System.out.println(file.getAbsolutePath());
-            xmlFilePath = file.toPath();
-//            Resource resource = resourceLoader.getResource("classpath:" + XML_FILE_NAME);
-//            InputStream inputStream = resource.getInputStream();
+            byte[] fileContent = extractFileBytes();
+            xmlFileContent = new String(fileContent);
             
-            FileInputStream inputStream = new FileInputStream("./resources/products.xml");
-            
-            // Read all bytes from the input stream and convert to string
-            byte[] bytes = inputStream.readAllBytes();
-            xmlFileContent = new String(bytes);
-            
-            // Create a new ByteArrayInputStream from the byte array
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(fileContent);
             XmlMapper xmlMapper = new XmlMapper();
             TypeReference<List<Product>> productsTypeRef = new TypeReference<>() {};
             products = xmlMapper.readValue(byteArrayInputStream, productsTypeRef);
-            
-            byteArrayInputStream.close();
-            inputStream.close();
         }
         catch (IOException e) {
-            String errorMessage = "Error while reading XML file: " + XML_FILE_NAME;
+            String errorMessage = "Error while parsing XML file: " + XML_FILE_NAME;
             throw new XmlParsingException(errorMessage, e);
         }
     }
     
-    
-//    @PostConstruct
-//    private void setXmlFilePath() {
-//        try {
-//            Resource resource = resourceLoader.getResource("classpath:" + XML_FILE_NAME);
-//            xmlFilePath = Path.of(resource.getURI());
-//            log.info("XML file path: " + xmlFilePath);
-//        }
-//        catch (IOException e) {
-//            String errorMessage = "Error while reading XML file: " + XML_FILE_NAME;
-//            throw new XmlParsingException(errorMessage, e);
-//        }
-//    }
+    private byte[] extractFileBytes() {
+        try (InputStream inputStream = new BufferedInputStream(new FileInputStream(XML_FILE_PATH.toString()));
+             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                byteArrayOutputStream.write(buffer, 0, bytesRead);
+            }
+            return byteArrayOutputStream.toByteArray();
+        }
+        catch (IOException e) {
+            String errorMessage = "Error while reading XML file bytes: " + XML_FILE_NAME;
+            throw new RuntimeException(errorMessage, e);
+        }
+    }
     
     // ------------------ extra stuff ------------------
     
@@ -146,7 +116,7 @@ public class ProductService {
         }
         
         try {
-            Files.copy(file.getInputStream(), xmlFilePath, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(file.getInputStream(), XML_FILE_PATH, StandardCopyOption.REPLACE_EXISTING);
         }
         catch (Exception e) {
             String errorMessage = "Error while reading XML file: " + XML_FILE_NAME;

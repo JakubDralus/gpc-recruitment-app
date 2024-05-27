@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
@@ -22,7 +23,7 @@ public class Application {
 	}
 	
 	
-	@PostConstruct
+//	@PostConstruct
 	public void onStart() throws IOException {
 		try {
 			FileInputStream inputStream = new FileInputStream("./resources/products.xml");
@@ -39,6 +40,5 @@ public class Application {
 			String errorMessage = "Error while reading XML file: ";
 			throw new XmlParsingException(errorMessage, e);
 		}
-		
 	}
 }

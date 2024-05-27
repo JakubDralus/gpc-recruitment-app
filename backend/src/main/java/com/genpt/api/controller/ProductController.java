@@ -53,7 +53,7 @@ public class ProductController {
         return productService.getXmlFileContent();
     }
     
-    @PutMapping("/update")
+    @PutMapping("/update-file")
     public ApiResponse<?> updateXmlFile(@RequestParam("file") MultipartFile file) {
         productService.updateFile(file);
         return ApiResponse.builder()
