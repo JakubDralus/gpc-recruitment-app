@@ -12,7 +12,7 @@
 
 	<groupId>com.genpt</groupId>
 	<artifactId>gpc-app-api</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<description>GPC recruitment app</description>
 
 	<properties>
