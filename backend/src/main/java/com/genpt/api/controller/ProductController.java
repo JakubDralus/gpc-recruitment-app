@@ -6,6 +6,7 @@ import com.genpt.api.util.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -52,11 +53,11 @@ public class ProductController {
         return productService.getXmlFileContent();
     }
     
-    @PostMapping("/upload")
-    public ApiResponse<?> uploadXmlFile(@RequestBody String file) {
-        int numOfRecords = productService.readXmlFile(file);
+    @PutMapping("/update")
+    public ApiResponse<?> updateXmlFile(@RequestParam("file") MultipartFile file) {
+        productService.updateFile(file);
         return ApiResponse.builder()
-                .message("File successfully parsed, number of records in the file: " + numOfRecords)
+                .message("File successfully updated.")
                 .build();
     }
 }
