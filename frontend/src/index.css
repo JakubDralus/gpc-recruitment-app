@@ -19,15 +19,3 @@ code {
 .header {
   height: 70px;
 }
-
-/* .mycontainer {
-  max-height: 100vh;
-  height: 100vh;
-  display: flex !important;
-  flex-direction: column;
-  background: rgb(208, 170, 245);
-}
-
-.response-box {
-  max-height: 100%;
-} */

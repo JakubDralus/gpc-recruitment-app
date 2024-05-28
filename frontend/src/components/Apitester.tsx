@@ -131,7 +131,7 @@ const ApiTester: React.FC = () => {
       <div className="w-2/5 bg-neutral-100 p-5 space-y-7 text-md">
 
         <div className='bg-white p-3 rounded-sm border'>
-          <p>Read File and Get Products Length</p>
+          <p>Read and parse file and Get Products Length</p>
           <ButtonComponent onClick={executeReadFile} text="api/v1/products/read-file" />
         </div>
 

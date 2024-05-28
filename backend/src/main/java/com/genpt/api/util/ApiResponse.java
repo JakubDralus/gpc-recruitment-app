@@ -10,7 +10,9 @@ import java.time.LocalDateTime;
 
 /**
  * Generic response template for clean JSON response.
+ *
  * @param <T> parameter of the data to be returned
+ * @see com.genpt.api.controller.ProductController
  */
 @Data
 @Builder

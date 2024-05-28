@@ -11,14 +11,22 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller class for managing product-related HTTP requests.
+ * @see ProductService
+ */
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/products")
-@CrossOrigin(origins = "http://localhost:3000")
 public class ProductController {
     
     private final ProductService productService;
     
+    /**
+     * Endpoint for reading XML file and getting the number of records.
+     * @return JSON with a message indicating successful parsing and the number of records.
+     * @see ApiResponse
+     */
     @GetMapping("/read-file")
     public ApiResponse<?> readXmlFileAndGetProductsLength() {
         int numOfRecords = productService.readXmlFile();
@@ -28,6 +36,11 @@ public class ProductController {
                 .build();
     }
     
+    /**
+     * Endpoint for fetching all products in JSON format.
+     * @return JSON with a message indicating successful retrieval and the list of products.
+     * @see ApiResponse
+     */
     @GetMapping("/all")
     public ApiResponse<?> getAllProductsJSON() {
         List<ProductDTO> allProducts = productService.getAllProducts();
@@ -37,8 +50,13 @@ public class ProductController {
                 .data(Map.of("products", allProducts))
                 .build();
     }
-
-    // assuming the product name might not be unique
+    
+    /**
+     * Endpoint for fetching products by name.
+     * @param name The name of the product to search for.
+     * @return JSON with a message indicating successful retrieval and the list of products matching the name.
+     * @see ApiResponse
+     */
     @GetMapping("/{name}")
     public ApiResponse<List<ProductDTO>> getProductsByName(@PathVariable String name) {
         List<ProductDTO> productByName = productService.getProductByName(name);
@@ -49,11 +67,20 @@ public class ProductController {
                 .build();
     }
     
+    /**
+     * Endpoint for getting the XML file content as application/xml.
+     */
     @GetMapping(value = "/xml", produces = MediaType.APPLICATION_XML_VALUE)
     public String getXmlFileContent() {
         return productService.getXmlFileContent();
     }
     
+    /**
+     * Endpoint for updating the XML file.
+     * @param file The updated XML file.
+     * @return ApiResponse indicating successful file update.
+     * @see ApiResponse
+     */
     @PutMapping("/update-file")
     public ApiResponse<?> updateXmlFile(@RequestParam("file") MultipartFile file) {
         productService.updateFile(file);

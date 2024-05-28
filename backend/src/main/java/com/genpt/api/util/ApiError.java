@@ -7,7 +7,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /**
- * Error response template for clean JSON error.
+ * Response template for returning errors in JSON format.
+ *
+ * @see com.genpt.api.controller.DefaultExceptionHandler
  */
 @Data
 @Builder

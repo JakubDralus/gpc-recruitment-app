@@ -5,6 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Product object type that is returned by the api.
+ *
+ * @see com.genpt.api.controller.ProductController
+ * @see com.genpt.api.model.Product
+ * @see com.genpt.api.mapper.ProductMapper
+ */
 @Data
 @Builder
 @NoArgsConstructor

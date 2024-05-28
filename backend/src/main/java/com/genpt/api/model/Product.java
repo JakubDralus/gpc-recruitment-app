@@ -1,8 +1,14 @@
 package com.genpt.api.model;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.genpt.api.service.ProductService;
 import lombok.Data;
 
+/**
+ * Object representing a product form XML file.
+ *
+ * @see ProductService
+ */
 @Data
 public class Product {
     
