@@ -27,8 +27,8 @@ public class DefaultExceptionHandler {
         return new ResponseEntity<>(apiError, httpStatus);
     }
     
-    @ExceptionHandler(XmlParsingException.class)
-    public ResponseEntity<ApiError> handleXmlParsing(ResourceNotFoundException ex, HttpServletRequest request) {
+    @ExceptionHandler(EmptyResourceException.class)
+    public ResponseEntity<ApiError> handleEmptyResource(EmptyResourceException ex, HttpServletRequest request) {
         
         HttpStatus httpStatus = HttpStatus.NOT_FOUND;
         ApiError apiError = ApiError.builder()
@@ -41,10 +41,10 @@ public class DefaultExceptionHandler {
         return new ResponseEntity<>(apiError, httpStatus);
     }
     
-    @ExceptionHandler(EmptyResourceException.class)
-    public ResponseEntity<ApiError> handleEmptyResource(EmptyResourceException ex, HttpServletRequest request) {
+    @ExceptionHandler(XmlParsingException.class)
+    public ResponseEntity<ApiError> handleXmlParsing(ResourceNotFoundException ex, HttpServletRequest request) {
         
-        HttpStatus httpStatus = HttpStatus.SERVICE_UNAVAILABLE;
+        HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         ApiError apiError = ApiError.builder()
                 .status(httpStatus.value())
                 .error(httpStatus.getReasonPhrase())

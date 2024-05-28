@@ -39,30 +39,6 @@ public class ProductService {
         return products.size();
     }
     
-    public List<ProductDTO> getAllProducts() {
-        if (products == null) {
-            throw new EmptyResourceException("The XML file was not yet parsed.");
-        }
-        return products.stream().map(productMapper).toList();
-    }
-    
-
-    public List<ProductDTO> getProductByName(String productName) {
-        if (products == null) {
-            throw new EmptyResourceException("The XML file was not yet parsed.");
-        }
-        
-        List<Product> foundProducts = products.stream()
-                .filter(product -> product.getName().equals(productName))
-                .toList();
-        
-        if (foundProducts.isEmpty()) {
-            throw new ResourceNotFoundException("Product not found with name: " + productName);
-        }
-
-        return foundProducts.stream().map(productMapper).toList();
-    }
-    
     private void parseXmlFile() {
         try {
             byte[] fileContent = extractFileBytes();
@@ -95,6 +71,30 @@ public class ProductService {
         }
     }
     
+    public List<ProductDTO> getAllProducts() {
+        if (products == null) {
+            throw new EmptyResourceException("The XML file was not yet parsed.");
+        }
+        return products.stream().map(productMapper).toList();
+    }
+    
+
+    public List<ProductDTO> getProductByName(String productName) {
+        if (products == null) {
+            throw new EmptyResourceException("The XML file was not yet parsed.");
+        }
+        
+        List<Product> foundProducts = products.stream()
+                .filter(product -> product.getName().equals(productName))
+                .toList();
+        
+        if (foundProducts.isEmpty()) {
+            throw new ResourceNotFoundException("Product not found with name: " + productName);
+        }
+
+        return foundProducts.stream().map(productMapper).toList();
+    }
+    
     // ------------------ extra stuff ------------------
     
     public String getXmlFileContent() {
@@ -108,10 +108,11 @@ public class ProductService {
         if (file.isEmpty()) {
             throw new EmptyResourceException("File is empty");
         }
-        if (!Objects.equals(file.getContentType(), MediaType.APPLICATION_XML_VALUE)) {
+        if (!Objects.equals(file.getContentType(), MediaType.APPLICATION_XML_VALUE)
+        || !Objects.equals(file.getContentType(), MediaType.TEXT_XML_VALUE)) {
             throw new InvalidParameterException(
-                    String.format("Wrong file content type: '%s', it should be %s.",
-                            file.getContentType(), MediaType.APPLICATION_XML_VALUE)
+                    String.format("Wrong file content type: '%s', it should be %s or %s.",
+                            file.getContentType(), MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML)
             );
         }
         
