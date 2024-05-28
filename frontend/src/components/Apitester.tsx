@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import ButtonComponent from './ButtonComponent';
+import ResponseMeta from './ResponseMeta';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { darcula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import axios from 'axios';
 import { ApiError } from '../model/models';
 
-
-const App: React.FC = () => {
+const ApiTester: React.FC = () => {
   const [response, setResponse] = useState<string>();
   const [responseMeta, setResponseMeta] = useState<any>();
   const [error, setError] = useState<string>('');
@@ -55,11 +56,11 @@ const App: React.FC = () => {
       return Promise.reject(error);
     }
   );
-  
+
   const executeReadFile = async () => {
+    setEndpoint('api/v1/products/read-file');
     try {
       const res = await axiosInst.get('/products/read-file');
-      setEndpoint('api/v1/products/read-file');
       setLanguage('txt');
       setResponse(JSON.stringify(res.data.message, null, 2));
     } 
@@ -67,9 +68,9 @@ const App: React.FC = () => {
   };
 
   const executeGetAllProducts = async () => {
+    setEndpoint('api/v1/products/all');
     try {
       const res = await axiosInst.get('/products/all');
-      setEndpoint('api/v1/products/all');
       setLanguage('json');
       setResponse(JSON.stringify(res.data.data, null, 2));
     } 
@@ -77,9 +78,9 @@ const App: React.FC = () => {
   };
 
   const executeGetProductsByName = async () => {
+    setEndpoint('api/v1/products/{name}');
     try {
       const res = await axiosInst.get(`/products/${searchName}`);
-      setEndpoint('api/v1/products/{name}');
       setLanguage('json');
       setResponse(JSON.stringify(res.data.data, null, 2));
     } 
@@ -87,9 +88,9 @@ const App: React.FC = () => {
   };
 
   const executeGetXmlFileContent = async () => {
+    setEndpoint('api/v1/products/xml');
     try {
       const res = await axiosInst.get('/products/xml');
-      setEndpoint('api/v1/products/xml');
       setLanguage('xml');
       setResponse(res.data);
     } 
@@ -105,18 +106,19 @@ const App: React.FC = () => {
   };
 
   const executeUpdateXmlFile = async () => {
+    setEndpoint('api/v1/products/update-file');
     try {
       const formData = new FormData();
       if (file) {
         formData.append('file', file);
         await axiosInst.put('/products/update-file', formData, {
-            headers: { 'Content-Type': 'application/xml' },
+          headers: { 'Content-Type': 'application/xml' },
         });
-        setEndpoint('api/v1/products/update-file');
         setLanguage('txt');
         setResponse('File successfully updated.');
       } 
       else {
+        setResponse('');
         setError('Please select a file.');
       }
     } 
@@ -125,27 +127,20 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-full">
-      
+
       <div className="w-2/5 bg-neutral-100 p-5 space-y-7 text-md">
-        <div className='bg-white p-3 rounded-sm border '>
+
+        <div className='bg-white p-3 rounded-sm border'>
           <p>Read File and Get Products Length</p>
-          <button
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded font-semibold mt-2 hover:bg-blue-600 text-lg"
-            onClick={executeReadFile}
-          >
-            api/v1/products/read-file
-          </button>
+          <ButtonComponent onClick={executeReadFile} text="api/v1/products/read-file" />
         </div>
-        <div className='bg-white p-3 rounded-sm border '>
+
+        <div className='bg-white p-3 rounded-sm border'>
           <p>Get All Products</p>
-          <button
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded font-semibold mt-2 hover:bg-blue-600 text-lg"
-            onClick={executeGetAllProducts}
-          >
-            api/v1/products/all
-          </button>
+          <ButtonComponent onClick={executeGetAllProducts} text="api/v1/products/all" />
         </div>
-        <div className='bg-white p-3 rounded-sm border '>
+
+        <div className='bg-white p-3 rounded-sm border'>
           <p>Get Products by Name</p>
           <input
             type="text"
@@ -154,54 +149,33 @@ const App: React.FC = () => {
             onChange={(e) => setSearchName(e.target.value)}
             className="w-full p-2 border rounded mb-2 mt-2"
           />
-          <button
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded font-semibold hover:bg-blue-600 text-lg"
-            onClick={executeGetProductsByName}
-          >
-            api/v1/products/&#123;name&#125;
-          </button>
+          <ButtonComponent onClick={executeGetProductsByName} text="api/v1/products/{name}" />
         </div>
-        <div className='bg-white p-3 rounded-sm border '>
+
+        <div className='bg-white p-3 rounded-sm border'>
           <p>Get XML File Content</p>
-          <button
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded font-semibold mt-2 hover:bg-blue-600 text-lg"
-            onClick={executeGetXmlFileContent}
-          >
-            api/v1/products/xml
-          </button>
+          <ButtonComponent onClick={executeGetXmlFileContent} text="api/v1/products/xml" />
         </div>
-        <div className='bg-white p-3 rounded-sm border '>
+
+        <div className='bg-white p-3 rounded-sm border'>
           <p>Update XML File</p>
           <input
             type="file"
             onChange={handleFileChange}
             className="w-full p-2 border rounded"
           />
-          <button
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded font-semibold mt-2 hover:bg-blue-600 text-lg"
-            onClick={executeUpdateXmlFile}
-          >
-            api/v1/products/update-file
-          </button>
+          <ButtonComponent onClick={executeUpdateXmlFile} text="api/v1/products/update-file" />
         </div>
+
       </div>
 
       <div className="w-3/4 p-4 bg-gray-200 response-box overflow-auto">
-        <h2 className="text-2xl font-bold mb-5 border-solid bg-slate-300 p-3 rounded-md">{endpoint}</h2>
 
-        <div className='font-semibold text-lg bg-white rounded-md p-3 mb-5'>
-          {responseMeta && (
-            <React.Fragment>
-              <p>Timestamp: {responseMeta.timeStamp?.toString()}</p>
-              <p>Status: {responseMeta.status}</p>
-              {responseMeta.error && <p>Message: {responseMeta.error}</p>}
-              {responseMeta.message && <p>Message: {responseMeta.message}</p>}
-            </React.Fragment>
-          )}
-        </div>
+        <h2 className="text-2xl font-bold mb-5 border-solid bg-slate-300 p-3 rounded-md">{endpoint}</h2>
+        <ResponseMeta responseMeta={responseMeta} />
 
         {response && (
-          <SyntaxHighlighter language={language} style={darcula} showLineNumbers={true} customStyle={{ borderRadius: '5px'}}>
+          <SyntaxHighlighter language={language} style={darcula} showLineNumbers={true} customStyle={{ borderRadius: '5px' }}>
             {response}
           </SyntaxHighlighter>
         )}
@@ -211,9 +185,9 @@ const App: React.FC = () => {
           </div>
         )}
       </div>
-      
+
     </div>
   );
 };
 
-export default App;
+export default ApiTester;
