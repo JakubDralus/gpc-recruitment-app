@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { darcula } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import axios from 'axios';
@@ -20,30 +20,41 @@ const App: React.FC = () => {
   
   axiosInst.interceptors.response.use(
     (response: any) => {
+      setError('');
       setResponseMeta(response.data);
       return response;
     },
     (error: any) => {
-      setResponseMeta(error.response.data);
-      // Handle error response
       if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
         const errorData: ApiError = error.response.data;
+        setResponseMeta(errorData);
         setError(`${errorData.status} ${errorData.error} - ${errorData.message}`);
       } 
+      else if (error.request) {
+        // The request was made but no response was received
+        setError('No response received from server.');
+        setResponseMeta({
+          timeStamp: new Date().toISOString(),
+          status: 0,
+          message: 'No response received from server.',
+        });
+      } 
       else {
+        // Something happened in setting up the request that triggered an Error
         setError(error.message);
+        setResponseMeta({
+          timeStamp: new Date().toString(),
+          status: 0,
+          message: error.message,
+        });
       }
+      
+      setResponse('');
       return Promise.reject(error);
     }
   );
-
-  useEffect(() => {
-    setError('');
-  }, [response]);
-
-  useEffect(() => {
-    setResponse('');
-  }, [error])
   
   const executeReadFile = async () => {
     try {
@@ -116,7 +127,7 @@ const App: React.FC = () => {
     <div className="flex h-full">
       
       <div className="w-2/5 bg-neutral-100 p-5 space-y-7 text-md">
-        <div className='bg-white p-3 rounded-sm'>
+        <div className='bg-white p-3 rounded-sm border '>
           <p>Read File and Get Products Length</p>
           <button
             className="w-full bg-blue-500 text-white py-2 px-4 rounded font-semibold mt-2 hover:bg-blue-600 text-lg"
@@ -125,7 +136,7 @@ const App: React.FC = () => {
             api/v1/products/read-file
           </button>
         </div>
-        <div className='bg-white p-3 rounded-sm'>
+        <div className='bg-white p-3 rounded-sm border '>
           <p>Get All Products</p>
           <button
             className="w-full bg-blue-500 text-white py-2 px-4 rounded font-semibold mt-2 hover:bg-blue-600 text-lg"
@@ -134,7 +145,7 @@ const App: React.FC = () => {
             api/v1/products/all
           </button>
         </div>
-        <div className='bg-white p-3 rounded-sm'>
+        <div className='bg-white p-3 rounded-sm border '>
           <p>Get Products by Name</p>
           <input
             type="text"
@@ -150,7 +161,7 @@ const App: React.FC = () => {
             api/v1/products/&#123;name&#125;
           </button>
         </div>
-        <div className='bg-white p-3 rounded-sm'>
+        <div className='bg-white p-3 rounded-sm border '>
           <p>Get XML File Content</p>
           <button
             className="w-full bg-blue-500 text-white py-2 px-4 rounded font-semibold mt-2 hover:bg-blue-600 text-lg"
@@ -159,7 +170,7 @@ const App: React.FC = () => {
             api/v1/products/xml
           </button>
         </div>
-        <div className='bg-white p-3 rounded-sm'>
+        <div className='bg-white p-3 rounded-sm border '>
           <p>Update XML File</p>
           <input
             type="file"
@@ -176,9 +187,9 @@ const App: React.FC = () => {
       </div>
 
       <div className="w-3/4 p-4 bg-gray-200 response-box overflow-auto">
-        <h2 className="text-2xl font-bold mb-5 border-solid  w-fit bg-slate-300 p-3 rounded-md">{endpoint}</h2>
+        <h2 className="text-2xl font-bold mb-5 border-solid bg-slate-300 p-3 rounded-md">{endpoint}</h2>
 
-        <div className='font-semibold text-lg w-fit bg-white rounded-md p-3 mb-3'>
+        <div className='font-semibold text-lg bg-white rounded-md p-3 mb-5'>
           {responseMeta && (
             <React.Fragment>
               <p>Timestamp: {responseMeta.timeStamp?.toString()}</p>
@@ -194,7 +205,7 @@ const App: React.FC = () => {
             {response}
           </SyntaxHighlighter>
         )}
-        {error !== '' && (
+        {error && (
           <div className="text-red-500 mt-5 font-semibold text-lg">
             {error}
           </div>
