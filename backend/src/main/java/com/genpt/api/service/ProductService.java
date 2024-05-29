@@ -8,6 +8,7 @@ import com.genpt.api.exception.ResourceNotFoundException;
 import com.genpt.api.exception.XmlParsingException;
 import com.genpt.api.mapper.ProductMapper;
 import com.genpt.api.model.Product;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.cache.annotation.CacheEvict;
@@ -35,8 +36,18 @@ public class ProductService {
     /** Name of the XML file containing product data. */
     private static final String XML_FILE_NAME = "products.xml";
     
-    /** Path to the XML file containing product data. */
-    private static final Path XML_FILE_PATH = Path.of("./resources/products.xml");
+    /** Path to the XML file containing product data. <br>
+     *
+     *  Filepath is relative because .jar file in docker can't see classpath resources.
+     *  So my solution is to make a volume with same path name here locally and on docker container.
+     *  (see Dockerfile) <br>
+     *
+     *  Other solution is to copy whole project to docker container and run the app there.
+     *  (I chose the first solution as I have very little space left on my laptop and docker is taking a lot of it.
+     *  and I don't have enough time to refactor it)
+     * */
+    @Getter
+    private final Path XML_FILE_PATH = Path.of("./resources/products.xml");
     
     /** Content of the XML file as a string. */
     private static String xmlFileContent = null;
@@ -50,28 +61,28 @@ public class ProductService {
      *
      * @return the number of products in the XML file.
      * @throws XmlParsingException if an error occurs while parsing the XML file.
-     * @see #parseXmlFile()
-     * @see #extractFileBytes()
+     * @see #parseXmlFile(Path) 
+     * @see #extractFileBytes(Path) 
      * @see #xmlFileContent
      * @see #products
      */
     @Cacheable(value = "products", key = "'readXmlFile'")
     public int readXmlFile() {
-        parseXmlFile();
+        parseXmlFile(XML_FILE_PATH);
         return products.size();
     }
     
     /**
      * Parses the XML file by mapping its content into a list of {@link Product} objects
      * and setting {@link #products} variable.
-     * File content is obtained by {@link #extractFileBytes()} method.
+     * File content is obtained by {@link #extractFileBytes(Path)} method.
      *
      * @throws XmlParsingException if an error occurs while parsing the XML file.
-     * @see #extractFileBytes()
+     * @see #extractFileBytes(Path) 
      */
-    private void parseXmlFile() {
+    private void parseXmlFile(Path filename) {
         try {
-            byte[] fileContent = extractFileBytes();
+            byte[] fileContent = extractFileBytes(filename);
             xmlFileContent = new String(fileContent);
             
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(fileContent);
@@ -91,8 +102,8 @@ public class ProductService {
      * @return XML content as a {@code byte[]};
      * @throws RuntimeException if an error occurs while reading the XML file bytes.
      */
-    private byte[] extractFileBytes() {
-        try (InputStream inputStream = new BufferedInputStream(new FileInputStream(XML_FILE_PATH.toString()));
+    private byte[] extractFileBytes(Path path) {
+        try (InputStream inputStream = new BufferedInputStream(new FileInputStream(String.valueOf(path)));
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[1024];
             int bytesRead;
@@ -103,6 +114,7 @@ public class ProductService {
         }
         catch (IOException e) {
             String errorMessage = "Error while reading XML file bytes: " + XML_FILE_NAME;
+            e.printStackTrace();
             throw new RuntimeException(errorMessage, e);
         }
     }
@@ -167,13 +179,14 @@ public class ProductService {
      * Additionally, clears the product cache.
      *
      * @param file the new XML file to replace the existing one.
+     * @param xmlFilePath path of the file that will be updated.
      * @throws EmptyResourceException      if the given file is empty.
      * @throws InvalidParameterException   if the given file is not of type XML.
      * @throws XmlParsingException         if an error occurs while updating the XML file.
      */
     @CacheEvict(value = "products", allEntries = true)
-    public void updateFile(MultipartFile file) {
-        if (file.isEmpty()) {
+    public void updateFile(MultipartFile file, Path xmlFilePath) {
+        if (file == null || file.isEmpty()) {
             throw new EmptyResourceException("File is empty");
         }
         if (!Objects.equals(file.getContentType(), MediaType.APPLICATION_XML_VALUE)
@@ -185,7 +198,7 @@ public class ProductService {
         }
         
         try {
-            Files.copy(file.getInputStream(), XML_FILE_PATH, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(file.getInputStream(), xmlFilePath, StandardCopyOption.REPLACE_EXISTING);
             // Invalidate local data since the file has been updated
             xmlFileContent = null;
             products = null;

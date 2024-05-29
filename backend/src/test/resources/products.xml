@@ -15,7 +15,7 @@
         <Active>false</Active>
     </Product>
     <Product id="3">
-        <Name>glass</Name>
+        <Name>test</Name>
         <Category>dish</Category>
         <PartNumberNR>9999-E7R-Q-M-K287B-YH</PartNumberNR>
         <CompanyName>HomeHome</CompanyName>

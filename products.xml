@@ -21,4 +21,11 @@
         <CompanyName>HomeHome</CompanyName>
         <Active>true</Active>
     </Product>
+    <Product id="4">
+        <Name>orange</Name>
+        <Category>fruit</Category>
+        <PartNumberNR>5603-J1A-G-M-1234-PO</PartNumberNR>
+        <CompanyName>FruitsAll</CompanyName>
+        <Active>true</Active>
+    </Product>
 </Products>

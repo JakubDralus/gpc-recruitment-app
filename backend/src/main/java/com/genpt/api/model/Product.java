@@ -2,7 +2,9 @@ package com.genpt.api.model;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.genpt.api.service.ProductService;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Object representing a product form XML file.
@@ -10,6 +12,8 @@ import lombok.Data;
  * @see ProductService
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Product {
     
     @JacksonXmlProperty(isAttribute = true)
