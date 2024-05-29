@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.function.Function;
 
 /**
- * Function mapping {@link Product} to {@link ProductDTO}.
+ * Function for mapping {@link Product} to {@link ProductDTO}.
  * @see com.genpt.api.service.ProductService
  */
 @Component

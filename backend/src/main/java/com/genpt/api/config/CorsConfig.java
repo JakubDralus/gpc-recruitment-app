@@ -9,9 +9,22 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class CorsConfig implements WebMvcConfigurer {
     
     /**
-     * Configuration for CORS policy enabling the frontend app communication.
+     * Configure Cross-Origin Resource Sharing (CORS) policy to enable communication
+     * between the backend Spring Boot application and a frontend web application.
+     * This method allows specifying origins, HTTP methods, headers, and whether
+     * credentials (e.g., cookies, HTTP authentication) should be allowed.
+     * <p>
+     * This method configures CORS for all paths (/**), allowing requests from a
+     * specific origin (http://localhost:3000), and specifying the allowed HTTP methods
+     * (GET, POST, PUT, DELETE, OPTIONS), headers (all), and whether credentials
+     * (e.g., cookies, HTTP authentication) should be allowed.
+     * <p>
+     * Note: It's important to understand the security implications of allowing
+     * cross-origin requests and ensure that the configured CORS policy meets the
+     * security requirements of the application.
      *
-     * @see WebMvcConfigurer
+     * @param registry the {@link CorsRegistry} containing the CORS configuration.
+     * @see CorsRegistry
      */
     @Override
     public void addCorsMappings(CorsRegistry registry) {

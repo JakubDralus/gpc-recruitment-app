@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Object representing a product form XML file.
+ * Class representing a product object form XML file.
  *
  * @see ProductService
  */

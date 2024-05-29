@@ -69,6 +69,7 @@ public class ProductController {
     
     /**
      * Endpoint for getting the XML file content as application/xml.
+     * @return the xml file.
      */
     @GetMapping(value = "/xml", produces = MediaType.APPLICATION_XML_VALUE)
     public String getXmlFileContent() {

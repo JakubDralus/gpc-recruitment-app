@@ -130,17 +130,17 @@ const ApiTester: React.FC = () => {
 
       <div className="w-2/5 bg-neutral-100 p-5 space-y-7 text-md">
 
-        <div className='bg-white p-3 rounded-sm border'>
+        <div className='bg-white p-3 rounded-md border'>
           <p>Read and parse file and Get Products Length</p>
           <ButtonComponent onClick={executeReadFile} text="api/v1/products/read-file" />
         </div>
 
-        <div className='bg-white p-3 rounded-sm border'>
+        <div className='bg-white p-3 rounded-md border'>
           <p>Get All Products</p>
           <ButtonComponent onClick={executeGetAllProducts} text="api/v1/products/all" />
         </div>
 
-        <div className='bg-white p-3 rounded-sm border'>
+        <div className='bg-white p-3 rounded-md border'>
           <p>Get Products by Name</p>
           <input
             type="text"
@@ -152,12 +152,12 @@ const ApiTester: React.FC = () => {
           <ButtonComponent onClick={executeGetProductsByName} text="api/v1/products/{name}" />
         </div>
 
-        <div className='bg-white p-3 rounded-sm border'>
+        <div className='bg-white p-3 rounded-md border'>
           <p>Get XML File Content</p>
           <ButtonComponent onClick={executeGetXmlFileContent} text="api/v1/products/xml" />
         </div>
 
-        <div className='bg-white p-3 rounded-sm border'>
+        <div className='bg-white p-3 rounded-md border'>
           <p>Update XML File</p>
           <input
             type="file"
@@ -165,7 +165,7 @@ const ApiTester: React.FC = () => {
             className="w-full p-2 border rounded"
           />
           <ButtonComponent onClick={executeUpdateXmlFile} text="api/v1/products/update-file" />
-          <span className=' te'></span>Remember to parse the file after uploading your own.
+          <div className='mt-2 text-sm'>Remember to parse the file after uploading your own.</div>
         </div>
 
       </div>

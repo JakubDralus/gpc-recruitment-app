@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Product object type that is returned by the api.
+ * Data Transfer Object (DTO) that is returned by the api.
  *
  * @see com.genpt.api.controller.ProductController
  * @see com.genpt.api.model.Product

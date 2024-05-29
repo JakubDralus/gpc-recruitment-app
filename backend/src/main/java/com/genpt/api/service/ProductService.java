@@ -8,7 +8,6 @@ import com.genpt.api.exception.ResourceNotFoundException;
 import com.genpt.api.exception.XmlParsingException;
 import com.genpt.api.mapper.ProductMapper;
 import com.genpt.api.model.Product;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.cache.annotation.CacheEvict;
@@ -37,32 +36,19 @@ public class ProductService {
     /** Mapper function for converting between Product and ProductDTO. */
     private final ProductMapper productMapper;
     
+    /**
+     * ResourceLoader used for loading resources in the application.
+     * In this class it is responsible for loading products.xml file form resources folder.
+     */
     private final ResourceLoader resourceLoader;
     
     /** Name of the XML file containing product data. */
-    @Getter
     private final String XML_FILE_NAME = "products.xml";
-    
-    /** Path to the XML file containing product data. <br>
-     *
-     *  Filepath is relative because .jar file in docker can't see classpath resources.
-     *  So my solution is to make a volume with same path name here locally and on docker container.
-     *  (see Dockerfile) <br>
-     *
-     *  Other solution is to copy whole project to docker container and run the app there.
-     *  (I chose the first solution as I have very little space left on my laptop and docker is taking a lot of it.
-     *  and I don't have enough time to refactor it)
-     * */
-//    private static final Path XML_FILE_PATH;
-//    static {
-//        XML_FILE_PATH = resourceLoader.getResource("classpath:" + XML_FILE_NAME).getFile().getPath();
-//    }
     
     /** Content of the XML file as a string. */
     private String xmlFileContent = null;
     
     /** List of products parsed from the XML file. */
-    
     private List<Product> products = null;
     
     
@@ -195,28 +181,28 @@ public class ProductService {
      */
     @CacheEvict(value = "products", allEntries = true)
     public void updateFile(MultipartFile file) {
+        if (file.isEmpty()) {
+            throw new EmptyResourceException("File is empty");
+        }
+        
+        if (!Objects.equals(file.getContentType(), MediaType.APPLICATION_XML_VALUE)
+                && !Objects.equals(file.getContentType(), MediaType.TEXT_XML_VALUE)) {
+            throw new InvalidParameterException(
+                    String.format("Wrong file content type: '%s', it should be %s or %s.",
+                            file.getContentType(), MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE)
+            );
+        }
+        
         try {
-            if (file.isEmpty()) {
-                throw new EmptyResourceException("File is empty");
-            }
-            if (!Objects.equals(file.getContentType(), MediaType.APPLICATION_XML_VALUE)
-                    && !Objects.equals(file.getContentType(), MediaType.TEXT_XML_VALUE)) {
-                throw new InvalidParameterException(
-                        String.format("Wrong file content type: '%s', it should be %s or %s.",
-                                file.getContentType(), MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE)
-                );
-            }
-            
             String path = resourceLoader.getResource("classpath:" + XML_FILE_NAME).getFile().getPath();
-            System.out.println(path);
-            byte[] fileContent = file.getBytes();
-            Files.write(Path.of(path), fileContent, StandardOpenOption.TRUNCATE_EXISTING);
+//            System.out.println(path);
+            Files.write(Path.of(path), file.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
             
             // Invalidate local data since the file has been updated
-//            xmlFileContent = new String(fileContent);
             xmlFileContent = null;
             products = null;
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             String errorMessage = "Error while updating XML file";
             throw new XmlParsingException(errorMessage, e);
         }
