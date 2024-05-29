@@ -165,6 +165,7 @@ const ApiTester: React.FC = () => {
             className="w-full p-2 border rounded"
           />
           <ButtonComponent onClick={executeUpdateXmlFile} text="api/v1/products/update-file" />
+          <span className=' te'></span>Remember to parse the file after uploading your own.
         </div>
 
       </div>

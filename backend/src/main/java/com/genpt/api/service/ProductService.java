@@ -13,14 +13,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Objects;
@@ -33,8 +37,11 @@ public class ProductService {
     /** Mapper function for converting between Product and ProductDTO. */
     private final ProductMapper productMapper;
     
+    private final ResourceLoader resourceLoader;
+    
     /** Name of the XML file containing product data. */
-    private static final String XML_FILE_NAME = "products.xml";
+    @Getter
+    private final String XML_FILE_NAME = "products.xml";
     
     /** Path to the XML file containing product data. <br>
      *
@@ -46,14 +53,17 @@ public class ProductService {
      *  (I chose the first solution as I have very little space left on my laptop and docker is taking a lot of it.
      *  and I don't have enough time to refactor it)
      * */
-    @Getter
-    private final Path XML_FILE_PATH = Path.of("./resources/products.xml");
+//    private static final Path XML_FILE_PATH;
+//    static {
+//        XML_FILE_PATH = resourceLoader.getResource("classpath:" + XML_FILE_NAME).getFile().getPath();
+//    }
     
     /** Content of the XML file as a string. */
-    private static String xmlFileContent = null;
+    private String xmlFileContent = null;
     
     /** List of products parsed from the XML file. */
-    private static List<Product> products = null;
+    
+    private List<Product> products = null;
     
     
     /**
@@ -61,50 +71,51 @@ public class ProductService {
      *
      * @return the number of products in the XML file.
      * @throws XmlParsingException if an error occurs while parsing the XML file.
-     * @see #parseXmlFile(Path) 
-     * @see #extractFileBytes(Path) 
+     * @see #parseXmlFile(byte[])
+     * @see #extractFileBytes(String)
      * @see #xmlFileContent
      * @see #products
      */
     @Cacheable(value = "products", key = "'readXmlFile'")
     public int readXmlFile() {
-        parseXmlFile(XML_FILE_PATH);
+        
+        byte[] fileContent = extractFileBytes(XML_FILE_NAME);
+        parseXmlFile(fileContent);
         return products.size();
     }
     
     /**
-     * Parses the XML file by mapping its content into a list of {@link Product} objects
-     * and setting {@link #products} variable.
-     * File content is obtained by {@link #extractFileBytes(Path)} method.
+     * Parses the XML file content into a list of {@link Product} objects
+     * and sets the {@link #products} variable.
      *
+     * @param fileContent the content of the XML file as byte array.
      * @throws XmlParsingException if an error occurs while parsing the XML file.
-     * @see #extractFileBytes(Path) 
      */
-    private void parseXmlFile(Path filename) {
+    private void parseXmlFile(byte[] fileContent) {
         try {
-            byte[] fileContent = extractFileBytes(filename);
             xmlFileContent = new String(fileContent);
-            
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(fileContent);
             XmlMapper xmlMapper = new XmlMapper();
             TypeReference<List<Product>> productsTypeRef = new TypeReference<>() {};
-            products = xmlMapper.readValue(byteArrayInputStream, productsTypeRef);
+            ByteArrayInputStream src = new ByteArrayInputStream(fileContent);
+            products = xmlMapper.readValue(src, productsTypeRef);
+            
+            src.close();
         }
         catch (IOException e) {
-            String errorMessage = "Error while parsing XML file: " + XML_FILE_NAME;
+            String errorMessage = "Error while parsing XML file";
             throw new XmlParsingException(errorMessage, e);
         }
     }
     
     /**
-     * Extracts the bytes from the XML file using {@link BufferedInputStream} for efficient data extraction.
+     * Extracts the bytes from the XML file using {@link ResourceLoader}.
      *
-     * @return XML content as a {@code byte[]};
+     * @return XML content as a {@code byte[]}.
      * @throws RuntimeException if an error occurs while reading the XML file bytes.
      */
-    private byte[] extractFileBytes(Path path) {
-        try (InputStream inputStream = new BufferedInputStream(new FileInputStream(String.valueOf(path)));
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+    private byte[] extractFileBytes(String filename) {
+        try (InputStream inputStream = resourceLoader.getResource("classpath:" + filename).getInputStream();
+             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[1024];
             int bytesRead;
             while ((bytesRead = inputStream.read(buffer)) != -1) {
@@ -113,8 +124,7 @@ public class ProductService {
             return byteArrayOutputStream.toByteArray();
         }
         catch (IOException e) {
-            String errorMessage = "Error while reading XML file bytes: " + XML_FILE_NAME;
-            e.printStackTrace();
+            String errorMessage = "Error while reading XML file bytes";
             throw new RuntimeException(errorMessage, e);
         }
     }
@@ -179,32 +189,35 @@ public class ProductService {
      * Additionally, clears the product cache.
      *
      * @param file the new XML file to replace the existing one.
-     * @param xmlFilePath path of the file that will be updated.
      * @throws EmptyResourceException      if the given file is empty.
      * @throws InvalidParameterException   if the given file is not of type XML.
      * @throws XmlParsingException         if an error occurs while updating the XML file.
      */
     @CacheEvict(value = "products", allEntries = true)
-    public void updateFile(MultipartFile file, Path xmlFilePath) {
-        if (file == null || file.isEmpty()) {
-            throw new EmptyResourceException("File is empty");
-        }
-        if (!Objects.equals(file.getContentType(), MediaType.APPLICATION_XML_VALUE)
-                && !Objects.equals(file.getContentType(), MediaType.TEXT_XML_VALUE)) {
-            throw new InvalidParameterException(
-                    String.format("Wrong file content type: '%s', it should be %s or %s.",
-                            file.getContentType(), MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE)
-            );
-        }
-        
+    public void updateFile(MultipartFile file) {
         try {
-            Files.copy(file.getInputStream(), xmlFilePath, StandardCopyOption.REPLACE_EXISTING);
+            if (file.isEmpty()) {
+                throw new EmptyResourceException("File is empty");
+            }
+            if (!Objects.equals(file.getContentType(), MediaType.APPLICATION_XML_VALUE)
+                    && !Objects.equals(file.getContentType(), MediaType.TEXT_XML_VALUE)) {
+                throw new InvalidParameterException(
+                        String.format("Wrong file content type: '%s', it should be %s or %s.",
+                                file.getContentType(), MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE)
+                );
+            }
+            
+            String path = resourceLoader.getResource("classpath:" + XML_FILE_NAME).getFile().getPath();
+            System.out.println(path);
+            byte[] fileContent = file.getBytes();
+            Files.write(Path.of(path), fileContent, StandardOpenOption.TRUNCATE_EXISTING);
+            
             // Invalidate local data since the file has been updated
+//            xmlFileContent = new String(fileContent);
             xmlFileContent = null;
             products = null;
-        }
-        catch (Exception e) {
-            String errorMessage = "Error while updating XML file: " + XML_FILE_NAME;
+        } catch (IOException e) {
+            String errorMessage = "Error while updating XML file";
             throw new XmlParsingException(errorMessage, e);
         }
     }
