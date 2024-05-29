@@ -9,8 +9,6 @@ services:
       - "8080:8080"
     environment:
       - JAVA_OPTS=-Dserver.port=8080
-#    volumes:
-#      - ./resources:/GPC-APP/resources # to access the same resources locally and on the docker
 
   frontend:
     container_name: gpc-react-app

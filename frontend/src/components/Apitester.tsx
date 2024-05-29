@@ -132,12 +132,12 @@ const ApiTester: React.FC = () => {
 
         <div className='bg-white p-3 rounded-md border'>
           <p>Read and parse file and Get Products Length</p>
-          <ButtonComponent onClick={executeReadFile} text="api/v1/products/read-file" />
+          <ButtonComponent onClick={executeReadFile} text="api/v1/products/read-file" httpMethod="GET"/>
         </div>
 
         <div className='bg-white p-3 rounded-md border'>
           <p>Get All Products</p>
-          <ButtonComponent onClick={executeGetAllProducts} text="api/v1/products/all" />
+          <ButtonComponent onClick={executeGetAllProducts} text="api/v1/products/all" httpMethod="GET"/>
         </div>
 
         <div className='bg-white p-3 rounded-md border'>
@@ -149,12 +149,12 @@ const ApiTester: React.FC = () => {
             onChange={(e) => setSearchName(e.target.value)}
             className="w-full p-2 border rounded mb-2 mt-2"
           />
-          <ButtonComponent onClick={executeGetProductsByName} text="api/v1/products/{name}" />
+          <ButtonComponent onClick={executeGetProductsByName} text="api/v1/products/{name}" httpMethod="GET"/>
         </div>
 
         <div className='bg-white p-3 rounded-md border'>
           <p>Get XML File Content</p>
-          <ButtonComponent onClick={executeGetXmlFileContent} text="api/v1/products/xml" />
+          <ButtonComponent onClick={executeGetXmlFileContent} text="api/v1/products/xml" httpMethod="GET"/>
         </div>
 
         <div className='bg-white p-3 rounded-md border'>
@@ -162,9 +162,9 @@ const ApiTester: React.FC = () => {
           <input
             type="file"
             onChange={handleFileChange}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded mt-2"
           />
-          <ButtonComponent onClick={executeUpdateXmlFile} text="api/v1/products/update-file" />
+          <ButtonComponent onClick={executeUpdateXmlFile} text="PUT api/v1/products/update-file" httpMethod="PUT" />
           <div className='mt-2 text-sm'>Remember to parse the file after uploading your own.</div>
         </div>
 
