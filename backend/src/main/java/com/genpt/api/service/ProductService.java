@@ -64,7 +64,6 @@ public class ProductService {
      */
     @Cacheable(value = "products", key = "'readXmlFile'")
     public int readXmlFile() {
-        
         byte[] fileContent = extractFileBytes(XML_FILE_NAME);
         parseXmlFile(fileContent);
         return products.size();

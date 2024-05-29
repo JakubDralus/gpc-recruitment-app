@@ -30,7 +30,6 @@ public class ProductController {
     @GetMapping("/read-file")
     public ApiResponse<?> readXmlFileAndGetProductsLength() {
         int numOfRecords = productService.readXmlFile();
-        
         return ApiResponse.builder()
                 .message("File successfully parsed, number of records in the file: " + numOfRecords)
                 .build();
@@ -44,7 +43,6 @@ public class ProductController {
     @GetMapping("/all")
     public ApiResponse<?> getAllProductsJSON() {
         List<ProductDTO> allProducts = productService.getAllProducts();
-        
         return ApiResponse.builder()
                 .message("Fetched all records from the file.")
                 .data(Map.of("products", allProducts))
@@ -60,7 +58,6 @@ public class ProductController {
     @GetMapping("/{name}")
     public ApiResponse<List<ProductDTO>> getProductsByName(@PathVariable String name) {
         List<ProductDTO> productByName = productService.getProductByName(name);
-        
         return ApiResponse.<List<ProductDTO>>builder()
                 .message(String.format("Fetched all records matching name: '%s'", name))
                 .data(productByName)

@@ -4,7 +4,6 @@ import com.genpt.api.dto.ProductDTO;
 import com.genpt.api.exception.EmptyResourceException;
 import com.genpt.api.mapper.ProductMapper;
 import com.genpt.api.service.ProductService;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +29,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@RequiredArgsConstructor
 class ProductServiceTest {
 	
 	@Mock
