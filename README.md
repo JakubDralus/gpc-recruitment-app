@@ -56,11 +56,15 @@ Follow these steps to deploy the project using Docker:
 Backend:
 - Java 17
 - Spring Boot 3.2.6
+- jackson-dataformat-xml 2.15.4
+- lombok 1.18.32
+- springdoc-openapi-starter-webmvc-ui 2.0.2
 - Maven 3.9.6
 
 Frontend:
 - react 18.3.1
 - tailwind 3.4.3
+- Typescript 4.9.5
 
 ### Swagger API documentation 
 
