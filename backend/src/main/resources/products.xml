@@ -12,7 +12,7 @@
         <Category>fruit</Category>
         <PartNumberNR>5603-J1A-G-M-W982F-PO</PartNumberNR>
         <CompanyName>FruitsAll</CompanyName>
-        <Active>true</Active>
+        <Active>false</Active>
     </Product>
     <Product id="3">
         <Name>glass</Name>
