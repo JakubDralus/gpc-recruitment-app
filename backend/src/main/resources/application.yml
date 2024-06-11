@@ -2,3 +2,7 @@ server:
   port: 8080
   error:
     include-message: always
+
+files:
+  xml:
+    products: products.xml
