@@ -30,7 +30,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ProductService {
     
-    /** Mapper function for converting between Product and ProductDTO. */
+    /** Mapper function for conversion between Product and ProductDTO. */
     private final ProductMapper productMapper;
     
     /**
@@ -55,11 +55,10 @@ public class ProductService {
     }
     
     /**
-     * Returns a list of all products mapped to their DTO object.
+     * Reads the XML file, parses it and returns a list of all products mapped to their DTO object.
      *
      * @param fileName the name of the xml file.
      * @return a list of all products.
-     * @throws EmptyResourceException if the XML file was not yet parsed.
      * @see ProductDTO
      * @see ProductMapper
      */
@@ -70,13 +69,12 @@ public class ProductService {
     }
     
     /**
-     * Returns a list of products that match the given name
+     * Reads the XML file, parses it and returns a list of products that match the given name
      * (assuming the name is not unique).
      *
      * @param fileName the name of the xml file.
      * @param productName the name of the product to search for.
      * @return a list of products that match the given name.
-     * @throws EmptyResourceException   if the XML file was not yet parsed.
      * @throws ResourceNotFoundException if no products are found with the given name.
      */
     @Cacheable(value = "products", key = "#productName")
@@ -93,6 +91,10 @@ public class ProductService {
         return foundProducts.stream().map(productMapper).toList();
     }
     
+    /**
+     * @param fileName the name of the xml file.
+     * @return list of products in the file.
+     */
     private List<Product> parseXmlFile(String fileName) {
         try {
             File xmlFile = resourceLoader.getResource("classpath:"+ fileName).getFile();
@@ -111,7 +113,7 @@ public class ProductService {
     // ----- extra -----
     
     /**
-     * Returns the content of the previously parsed XML file as a string.
+     * Returns the content of the XML file as a string.
      *
      * @return the content of the XML file.
      * @throws EmptyResourceException if the XML file was not yet parsed or is empty.

@@ -24,6 +24,9 @@ public class ProductController {
     
     private final ProductService productService;
     
+    /**
+     *  XML file name from application.yml
+     */
     @Value("${files.xml.products}")
     private String xmlFileName;
     
@@ -33,7 +36,7 @@ public class ProductController {
     }
     
     /**
-     * Endpoint for reading XML file and getting the number of records.
+     * Endpoint for getting the number of records.
      * @return JSON with a message indicating successful parsing and the number of records.
      * @see ApiResponse
      */
@@ -78,7 +81,7 @@ public class ProductController {
     
     /**
      * Endpoint for getting the XML file content as application/xml.
-     * @return the xml file.
+     * @return the xml file
      */
     @GetMapping(value = "/xml", produces = MediaType.APPLICATION_XML_VALUE)
     public String getXmlFileContent() {
@@ -86,8 +89,8 @@ public class ProductController {
     }
     
     /**
-     * Endpoint for updating the XML file.
-     * @param uploadedFile The updated XML file.
+     * Endpoint for updating the XML file with the contents of uploaded file.
+     * @param uploadedFile The uploaded XML file.
      * @return ApiResponse indicating successful file update.
      * @see ApiResponse
      */
