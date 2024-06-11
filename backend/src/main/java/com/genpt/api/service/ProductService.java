@@ -43,6 +43,7 @@ public class ProductService {
     /**
      * Reads the XML file, parses it and returns the number of products.
      *
+     * @param fileName the name of the xml file.
      * @return the number of products in the XML file.
      * @throws XmlParsingException if an error occurs while parsing the XML file.
      * @see #parseXmlFile(String fileName)
@@ -56,6 +57,7 @@ public class ProductService {
     /**
      * Returns a list of all products mapped to their DTO object.
      *
+     * @param fileName the name of the xml file.
      * @return a list of all products.
      * @throws EmptyResourceException if the XML file was not yet parsed.
      * @see ProductDTO
@@ -71,6 +73,7 @@ public class ProductService {
      * Returns a list of products that match the given name
      * (assuming the name is not unique).
      *
+     * @param fileName the name of the xml file.
      * @param productName the name of the product to search for.
      * @return a list of products that match the given name.
      * @throws EmptyResourceException   if the XML file was not yet parsed.

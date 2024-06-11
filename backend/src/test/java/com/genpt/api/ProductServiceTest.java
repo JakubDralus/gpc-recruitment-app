@@ -4,11 +4,13 @@ import com.genpt.api.dto.ProductDTO;
 import com.genpt.api.exception.EmptyResourceException;
 import com.genpt.api.mapper.ProductMapper;
 import com.genpt.api.service.ProductService;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.MediaType;
@@ -17,30 +19,28 @@ import org.springframework.mock.web.MockMultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.InvalidParameterException;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
-	
 	@Mock
-	private ResourceLoader resourceLoader;
-    private ProductService productService;
-	private String xmlContent;
+	private static ResourceLoader resourceLoader;
+	private static ProductService productService;
 	
-	@BeforeEach
-	void setUp() throws Exception {
-        ProductMapper productMapper = new ProductMapper(); //this is actual mapper but the resourceLoader is mocked
-        productService = new ProductService(productMapper, resourceLoader);
-		
+	@Value("${files.xml.products}")
+	private static String XML_FILE_NAME;
+	private static File tempFile;
+	private static final String xmlContent;
+	static {
 		xmlContent = """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <Products>
@@ -59,7 +59,7 @@ class ProductServiceTest {
                         <Active>false</Active>
                     </Product>
                     <Product id="3">
-                        <Name>glass</Name>
+                        <Name>test</Name>
                         <Category>dish</Category>
                         <PartNumberNR>9999-E7R-Q-M-K287B-YH</PartNumberNR>
                         <CompanyName>HomeHome</CompanyName>
@@ -67,25 +67,35 @@ class ProductServiceTest {
                     </Product>
                 </Products>
                 """;
-		
-		// we have to parse the file each test
-		testReadXmlFile();
 	}
 	
-	@Test
-	void testReadXmlFile() throws Exception {
+	@BeforeAll
+	static void beforeAll() throws Exception {
+		// Initialize mocks
+		MockitoAnnotations.openMocks(ProductServiceTest.class);
+		
+		// Manually initialize the mock for the static resourceLoader
+		resourceLoader = mock(ResourceLoader.class);
+		ProductMapper productMapper = new ProductMapper(); // this is actual mapper but the resourceLoader is mocked
+		productService = new ProductService(productMapper, resourceLoader);
+		
+		// mock resource loader behaviour
 		Resource resource = mock(Resource.class);
+		tempFile = File.createTempFile("test", ".xml");
+		tempFile.deleteOnExit();
+		Files.writeString(tempFile.toPath(), xmlContent);
 		InputStream inputStream = new ByteArrayInputStream(xmlContent.getBytes(StandardCharsets.UTF_8));
 		
 		when(resourceLoader.getResource(anyString())).thenReturn(resource);
+		when(resource.getFile()).thenReturn(tempFile);
 		when(resource.getInputStream()).thenReturn(inputStream);
-		
-		int productCount = productService.readXmlFile();
-		
-		assertEquals(3, productCount);
-		inputStream.close();
 	}
 	
+	@Test
+	void testReadXmlFile() {
+		int productCount = productService.readXmlFile(XML_FILE_NAME);
+		assertEquals(3, productCount);
+	}
 	
 	@Test
 	void testGetAllProducts() {
@@ -94,11 +104,11 @@ class ProductServiceTest {
 						"2303-E1A-G-M-W209B-VM", "FruitsAll", true),
 				new ProductDTO(2L, "orange", "fruit",
 						"5603-J1A-G-M-W982F-PO", "FruitsAll", false),
-				new ProductDTO(3L, "glass", "dish",
+				new ProductDTO(3L, "test", "dish",
 						"9999-E7R-Q-M-K287B-YH", "HomeHome", true)
 		);
 		
-		List<ProductDTO> productDTOs = productService.getAllProducts();
+		List<ProductDTO> productDTOs = productService.getAllProducts(XML_FILE_NAME);
 		
 		assertEquals(3, productDTOs.size());
 		assertEquals(expected, productDTOs);
@@ -109,51 +119,19 @@ class ProductServiceTest {
 		ProductDTO appleDTO = new ProductDTO(1L, "apple", "fruit",
 				"2303-E1A-G-M-W209B-VM", "FruitsAll", true);
 		
-		List<ProductDTO> productDTOs = productService.getProductByName("apple");
+		List<ProductDTO> productDTOs = productService.getProductByName(XML_FILE_NAME, "apple");
 		
 		assertEquals(1, productDTOs.size());
 		assertEquals(appleDTO, productDTOs.get(0));
 	}
 	
+	
+	// --- extra ---
+	
 	@Test
 	void testGetXmlFileContent() {
-		String fileContent = productService.getXmlFileContent();
-		String expectedContent = xmlContent;
-		
-		assertEquals(fileContent, expectedContent);
-	}
-	
-	@Test
-	void testGetXmlFileContentThrows() throws NoSuchFieldException, IllegalAccessException {
-		Field xmlFileContentField = ProductService.class.getDeclaredField("xmlFileContent");
-		xmlFileContentField.setAccessible(true);
-		xmlFileContentField.set(productService, null);
-		
-		assertThrows(EmptyResourceException.class, () -> productService.getXmlFileContent());
-	}
-	
-	@Test
-	void testUpdateFileFields() throws Exception {
-		byte[] content = xmlContent.getBytes(StandardCharsets.UTF_8);
-		MockMultipartFile file = new MockMultipartFile("file", "products.xml",
-				MediaType.APPLICATION_XML_VALUE, content);
-		
-		Resource resource = mock(Resource.class);
-		when(resourceLoader.getResource(anyString())).thenReturn(resource);
-		when(resource.getFile()).thenReturn(File.createTempFile("test", ".xml"));
-		
-		productService.updateFile(file);
-		
-		verify(resourceLoader, times(2)).getResource(anyString());
-		
-		// Use reflection to access static fields for verification
-		Field xmlFileContentField = ProductService.class.getDeclaredField("xmlFileContent");
-		xmlFileContentField.setAccessible(true);
-		assertNull(xmlFileContentField.get(productService));
-		
-		Field productsField = ProductService.class.getDeclaredField("products");
-		productsField.setAccessible(true);
-		assertNull(productsField.get(productService));
+		String fileContent = productService.getXmlFileContent(XML_FILE_NAME);
+        assertEquals(fileContent, xmlContent);
 	}
 	
 	@Test
@@ -162,19 +140,10 @@ class ProductServiceTest {
 		MockMultipartFile file = new MockMultipartFile("file", "products.xml",
 				MediaType.APPLICATION_XML_VALUE, content);
 		
-		// Create a temporary file to simulate the resource
-		File tempFile = File.createTempFile("test", ".xml");
-		tempFile.deleteOnExit();
-		Path tempFilePath = tempFile.toPath();
-		
-		Resource resource = mock(Resource.class);
-		when(resourceLoader.getResource(anyString())).thenReturn(resource);
-		when(resource.getFile()).thenReturn(tempFile);
-		
-		productService.updateFile(file);
+		productService.updateFile(file, XML_FILE_NAME);
 		
 		// Verify that the file content was updated correctly
-		String updatedContent = Files.readString(tempFilePath);
+		String updatedContent = Files.readString(tempFile.toPath());
 		assertEquals(xmlContent, updatedContent);
 	}
 	
@@ -183,7 +152,9 @@ class ProductServiceTest {
 		MockMultipartFile file = new MockMultipartFile("file", "test.xml",
 				"application/xml", new byte[0]);
 		
-		Exception exception = assertThrows(EmptyResourceException.class, () -> productService.updateFile(file));
+		Exception exception = assertThrows(
+				EmptyResourceException.class, () -> productService.updateFile(file, XML_FILE_NAME)
+		);
 		
 		String expectedMessage = "File is empty";
 		String actualMessage = exception.getMessage();
@@ -197,7 +168,9 @@ class ProductServiceTest {
 		MockMultipartFile file = new MockMultipartFile("file", "test.txt",
 				"text/plain", "Test content".getBytes());
 		
-		Exception exception = assertThrows(InvalidParameterException.class, () -> productService.updateFile(file));
+		Exception exception = assertThrows(
+				InvalidParameterException.class, () -> productService.updateFile(file, XML_FILE_NAME)
+		);
 		
 		String expectedMessage = "Wrong file content type: 'text/plain', it should be application/xml or text/xml.";
 		String actualMessage = exception.getMessage();
